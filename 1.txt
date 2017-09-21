@@ -1,0 +1,297 @@
+/*[[
+   
+]]*/
+install("web.business.CagRealtion",function($S){
+  	var logger = Log.getLogger("web.business.CagRealtion");
+  	const {UI,Service,Resource} = Smart,
+  	{Grid, Icon,Popconfirm , Select, Row,Col,Card,Tabs ,Button ,DatePicker,DateFormat, Modal, message,Form,FormItem,Input,Switch,Lookup,Calendar} = UI;
+  
+  	const service = Service.New("COM");
+  		let checkWindow=null;
+  		let group=[];
+  		let attradd=[];
+  		let attribute=[];
+  		let cb;
+  		let cbid;
+  	const columns = [{
+  		title: '操作',
+  		dataIndex: 'operation',
+  		width: 80,
+  		render(text, record, index) {
+  			return (
+  				      <span>
+  				        <span title="添加分组"  onClick={_.bind(chenckKowledge,this,record)}><i className="fa fa-file-text" /></span>
+  				        <span className="ant-divider"></span>
+  				        <a href="#" className="ant-dropdown-link">
+  				          	更多 <Icon type="down" />
+  				        </a>
+  				      </span>
+  				    );
+  		}
+  	},
+  	  {
+  	  	title: '类目编号',
+  		dataIndex: 'categoryNum',
+  	  },
+  	  {
+  	  	title: '属性编号',
+  		dataIndex: 'attributeNum',
+  	  },
+  	  {
+  	  	title: '分组编号',
+  		dataIndex: 'groupNum',
+  	  },
+  	  {
+  	  	title: '分组序号',
+  		dataIndex: 'groupOrdinal',
+  	  },
+  	];
+  	
+  	
+  	//审批界面的window框
+	var chenckKowledge = function(data){
+		checkWindow = UI.window({
+			    title: '审批界面',
+			    width: 1000,
+			  },<DataForm  data={data} />)
+	};
+  	
+  	
+  	
+  	const DataForm = Form.create({mapPropsToFields:function(props){          
+		const {data} = props;
+	
+		return _.mapValues(_.extend({},data),function(value){    // 根据data值，循环复制到各个空间
+		return {value:value}
+	});
+	}})(React.createClass({
+	
+	
+	handleReset(){checkWindow.close();},
+	handleSubmit(e){
+	e.preventDefault();
+	 const {form} = this.props;
+	  var checkData = form.getFormatFieldsValue();
+	  checkData.categoryNum="20";
+	   checkData.id=4;
+	   checkData.groupNum=cbid;
+	  checkData.groupOrdinal="12";
+	 for(var j=0;j<attradd.length;j++){
+	 checkData.attributeNum=attradd[j];
+	  service.create(checkData,null,(Rdata)=>{
+						  message.success('保存成功');
+						  
+						 
+						  
+					  });
+					     checkData.id+=1;
+					    
+	 
+	 }
+	   checkWindow.close();
+						  return;
+	 
+	
+	console.log(this.props);
+	
+	},
+	
+	handleDepart(value){
+	attradd=value.join();
+	console.log("junge");
+	console.log(attradd);
+	console.log(attradd[0]);
+	
+	},
+	
+	
+	handleKnow(value){
+	attradd.length=0;
+	//value 代表的就是key值
+	cbid=value;
+	
+
+	for(let i=0;i<group.length;i++){
+	if(cbid==group[i].key){
+	cb=group[i].props.children;
+	break;
+	}
+	
+	}
+	attribute.length=0;
+		console.log(attribute);
+	
+	Resource.get("services/attribute/a/"+cbid,(Level)=>{
+	console.log(Level);
+				for (let i = 0;i<Level.length;i++) {
+						 attribute.push(<Option key={Level[i].id}>{Level[i].attributeName}</Option>);
+				}
+					// 如果查询不到结果，则不打开表单。
+			});
+	
+	
+	},
+	
+	
+	render() {
+			const {linkState,form} = this.props;
+			const { getFieldProps, getLookupFieldProps,getFieldError, isFieldValidating } = this.props.form;
+		
+			const categoryNum = getFieldProps('categoryNum', {
+			      rules: [
+			        { required: true,  message: '类目编号'}
+			      ],
+			    });
+		    const attributeNum = getFieldProps('attributeNum', {
+			      rules: [
+			       { required: true, message: '属性编号'} 
+			      ],  
+			    });
+		    const groupNum = getLookupFieldProps('groupNum', {
+			    rules: [
+			        { required: true, type:'array',   message: '分组编号'}
+			      ],
+			    });			    
+		    const groupOrdinal = getFieldProps('groupOrdinal', {
+			    rules: [
+			        { required: true,  message: '序号'},
+			      ],
+			    });		    
+		  
+			return (
+		      <Form horizontal >
+			      <div>
+				   <Card title="知识信息">
+				     <Row>
+				     	<Col span="3"> </Col>
+				     	<Col span="6">
+			                <FormItem key="item1" label="分组编号：" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>                 
+			                 	<Input type="input" placeholder="分组编号" {...groupNum} />
+			                </FormItem>
+				        </Col>
+				        
+				        <Col span="6">
+					        <FormItem key="item2" label="类目编号：" labelCol={{ span: 8}} wrapperCol={{ span: 16 }}>  			  
+					        	<Input type="input" placeholder="类目编号"  {...categoryNum} />
+					        </FormItem>					        					       					        					        					        				     
+					    </Col>
+				           
+					    <Col span="6">
+					        <FormItem key="item3" label="属性编号：" labelCol={{ span: 8}} wrapperCol={{ span: 16 }}>
+					        	<Input type="input" placeholder="属性编号"  {...attributeNum}  />                 
+					        	
+					      	</FormItem>
+				        </Col>
+				     </Row>
+			        
+			    </Card>
+			</div>
+			<div>
+			   <Card title="属性添加">
+				   <Row>
+			     	<Col span="3"> </Col>
+			     	<Col span="6">
+		               <FormItem key="item1" label="部门权限：" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>                 
+		               <Select tags style={{ width: '100%' }}  placeholder="请选择部门"  onChange={this.handleDepart}>
+		               		{attribute}
+		               </Select>
+		               </FormItem>
+			        </Col>
+			        <Col span = "6">
+			        	<FormItem key="item1" label="知识权限：" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
+				        <Select placeholder="知识权限" style={{ width: 120 }} onChange={this.handleKnow}>
+					        {group}
+					    </Select>
+					    </FormItem>
+			        </Col>
+			        
+			     </Row>
+			  </Card>
+			</div>
+			<div>
+			<Row>
+	         	<FormItem wrapperCol={{ span: 8, offset: 10 }} >
+	         		<Input type="hidden" {...getFieldProps('id')} />
+	         			<Button type="primary" htmlType="submit" onClick={this.handleSubmit}>保存</Button>
+	         			&nbsp;&nbsp;&nbsp;
+	         			<Button type="dashed"  onClick={this.handleReset}>重置</Button>
+	        	</FormItem>
+	         </Row>
+			</div>
+	       </Form>
+			);
+		}
+	
+	
+	}));
+  	
+  	
+  	
+  	
+  	let QForm = React.createClass({
+	  render() {
+	    const { getFieldProps} = this.props.form;
+	    
+	   
+      	const categoryNum = getFieldProps('Q_categoryNum_S_LK');
+      	const attributeNum = getFieldProps('Q_attributeNum_S_LK');
+      	const groupNum = getFieldProps('Q_groupNum_S_LK');
+      	const groupOrdinal = getFieldProps('Q_groupOrdinal_S_LK');
+	    
+	    return (
+	      <Form inline onSubmit={this.props.querySubmit}>
+	      	  <FormItem label="类目编号：">
+		         <Input placeholder="请输入类目编号" {...categoryNum} />
+		      </FormItem>
+	      	  <FormItem label="属性编号：">
+		         <Input placeholder="请输入属性编号" {...attributeNum} />
+		      </FormItem>
+	      	  <FormItem label="分组编号：">
+		         <Input placeholder="请输入分组编号" {...groupNum} />
+		      </FormItem>
+	      	  <FormItem label="分组序号：">
+		         <Input placeholder="请输入分组序号" {...groupOrdinal} />
+		      </FormItem>
+	        {this.props.children}
+	      </Form>
+	    );
+	  }
+	});
+
+	QForm = Form.create()(QForm);
+  	
+  	const App = React.createClass({
+  	
+  	getInitialState: function() {
+			return {				
+			};
+		},	
+		
+		
+		componentDidMount()
+		{	
+		Resource.get("services/com/junge",(Group)=>{
+		
+				for (let i = 0;i<Group.length;i++) {
+						 group.push(<Option key={Group[i].id}>{Group[i].groupName}</Option>);
+				}
+			
+					// 如果查询不到结果，则不打开表单。
+			});
+		
+			
+		},
+  	
+  	
+   		render: function() {
+  			return <Grid rowKey='id' 
+  				QForm={QForm} 
+  				columns={columns} 
+  				service={service} />
+  		}
+  	});
+  
+   	this.ready = function(){
+   		return App;
+  	};
+  });
