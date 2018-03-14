@@ -3,5 +3,5 @@ source /etc/profile
 mvn -v
 cd /zj/test/Test
 mvn clean install
-cd /target
+cd /zj/test/Test/target
 java -jar Test-1.2.5.RELEASE.jar
